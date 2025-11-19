@@ -46,53 +46,7 @@
 
 ////////////////////////////////////////////
 
-const char *sipMsg =
-        "Type 73 Name NVITE sip:+442070310794@172.16.146.100:5060;transport=UDP SIP/2.0
-From: <sip:447425119116@212.161.122.242>;tag=BN-2079760812-1-1763540264-294730653
-To: <sip:+442070310794@84.246.114.6>
-Call-ID: 359289599_117419418@212.161.122.242
-CSeq: 922235 INVITE
-Via: SIP/2.0/UDP 172.16.164.12:5060;branch=z9hG4bK-11cfab9d-4b86c9-27068309-7fb689fb5778
-Route: <sip:172.16.146.100:5060;lr>
-X-SessionId: -2079760812
-User-Agent: BN4000-3.9.2-814
-Supported: timer,100rel
-Max-Forwards: 69
-Accept: application/sdp, application/isup, application/dtmf, application/dtmf-relay, multipart/mixed
-P-Asserted-Identity: <sip:+447425119116@212.161.122.242:5060>
-Via: SIP/2.0/UDP 84.246.114.6:5060;received=212.161.122.242;rport=5060;branch=z9hG4bK-2079760812
-Via: SIP/2.0/UDP 212.161.122.242:5060;branch=z9hG4bK0aB346644be345f3e07
-Contact: <sip:447425119116@172.16.164.12:5060;transport=UDP>
-Content-Disposition: session;handling=required
-Allow: INVITE,CANCEL,ACK,BYE,OPTIONS,INFO,PRACK,UPDATE,REFER,NOTIFY
-Session-Expires: 1800
-Min-SE: 90
-Content-Type: application/sdp
-Content-Length: 210
-
-v=0
-o=BN4000 866273 440044 IN IP4 172.16.164. value 46.100:5060;transport=UDP SIP/2.0
-From: <sip:447425119116@212.161.122.242>;tag=BN-2079760812-1-1763540264-294730653
-To: <sip:+442070310794@84.246.114.6>
-Call-ID: 359289599_117419418@212.161.122.242
-CSeq: 922235 INVITE
-Via: SIP/2.0/UDP 172.16.164.12:5060;branch=z9hG4bK-11cfab9d-4b86c9-27068309-7fb689fb5778
-Route: <sip:172.16.146.100:5060;lr>
-X-SessionId: -2079760812
-User-Agent: BN4000-3.9.2-814
-Supported: timer,100rel
-Max-Forwards: 69
-Accept: application/sdp, application/isup, application/dtmf, application/dtmf-relay, multipart/mixed
-P-Asserted-Identity: <sip:+447425119116@212.161.122.242:5060>
-Via: SIP/2.0/UDP 84.246.114.6:5060;received=212.161.122.242;rport=5060;branch=z9hG4bK-2079760812
-Via: SIP/2.0/UDP 212.161.122.242:5060;branch=z9hG4bK0aB346644be345f3e07
-Contact: <sip:447425119116@172.16.164.12:5060;transport=UDP>
-Content-Disposition: session;handling=required
-Allow: INVITE,CANCEL,ACK,BYE,OPTIONS,INFO,PRACK,UPDATE,REFER,NOTIFY
-Session-Expires: 1800
-Min-SE: 90
-Content-Type: application/sdp
-Content-Length: 210";
+;
 
     char contact[256];
 
@@ -101,4 +55,53 @@ Content-Length: 210";
     } else {
         printf("Contact header not found!\n");
     }
+////////////////////////////////////////////
+ if (!sip || !out) return 0;
 
+    // ---- 1. Find start of real SIP message ----
+    const char *real = strstr(sip, "SIP/2.0");
+    if (!real)
+        real = sip;  // fallback
+
+    // ---- 2. Search for Contact: from real SIP ----
+    const char *p = real;
+    const char *contactPos = NULL;
+
+    while (*p) {
+        if (_strnicmp(p, "Contact:", 8) == 0) {
+            contactPos = p + 8;
+            break;
+        }
+        p++;
+    }
+
+    if (!contactPos)
+        return 0;
+
+    // ---- 3. Skip spaces ----
+    while (*contactPos == ' ' || *contactPos == '\t')
+        contactPos++;
+
+    // ---- 4. Extract URI ----
+    const char *start = strchr(contactPos, '<');
+    const char *end = NULL;
+
+    if (start) {
+        end = strchr(start, '>');
+        if (!end) return 0;
+        start++;  // skip '<'
+    }
+    else {
+        start = contactPos;
+        end = start;
+        while (*end && *end != ';' && *end != '\r' && *end != '\n')
+            end++;
+    }
+
+    int len = (int)(end - start);
+    if (len <= 0 || len >= outSize)
+        return 0;
+
+    strncpy(out, start, len);
+    out[len] = '\0';
+    return 1;
