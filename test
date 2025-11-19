@@ -1,4 +1,9 @@
-while (*p) {
+
+    const char *p = sip;
+    const char *contactPos = NULL;
+    
+    // Find "Contact:" (case-insensitive)
+    while (*p) {
         if (_strnicmp(p, "Contact:", 8) == 0) {
             contactPos = p + 8;
             break;
