@@ -1,0 +1,40 @@
+while (*p) {
+        if (_strnicmp(p, "Contact:", 8) == 0) {
+            contactPos = p + 8;
+            break;
+        }
+        p++;
+    }
+
+    if (!contactPos)
+        return 0;
+
+    // Skip spaces
+    while (*contactPos == ' ' || *contactPos == '\t')
+        contactPos++;
+
+    // If <sip:...>
+    const char *start = strchr(contactPos, '<');
+    const char *end   = NULL;
+
+    if (start) {
+        end = strchr(start, '>');
+        if (!end)
+            return 0;
+
+        start++; // skip '<'
+    } else {
+        // No <> found, take till semicolon or end of line
+        start = contactPos;
+        end = start;
+        while (*end && *end != ';' && *end != '\r' && *end != '\n')
+            end++;
+    }
+
+    int len = end - start;
+    if (len <= 0 || len >= outSize)
+        return 0;
+
+    strncpy(out, start, len);
+    out[len] = '\0';
+    return 1;
