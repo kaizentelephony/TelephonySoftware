@@ -1,0 +1,53 @@
+/*This function is used to the reset the single channel. We have called iStop channel to stop 
+	all the activity, iCloseChannel function to close the channel and iOpen channel to open
+	the channel*/
+	 if (!sip || !outp) return 0;
+
+    // ---- 1. Find start of real SIP message ----
+    const char *real = strstr(sip, "SIP/2.0");
+    if (!real)
+        real = sip;  // fallback
+
+    // ---- 2. Search for Contact: from real SIP ----
+    const char *p = real;
+    const char *contactPos = NULL;
+
+    while (*p) {
+        //if (_strnicmp(p, "Contact:", 8) == 0) {
+		if (_strnicmp(p, "c=IN IP4", 8) == 0) {
+            contactPos = p + 8;
+            break;
+        }
+        p++;
+    }
+
+    if (!contactPos)
+        return 0;
+
+    // ---- 3. Skip spaces ----
+    while (*contactPos == ' ' || *contactPos == '\t')
+        contactPos++;
+
+    // ---- 4. Extract URI ----
+    const char *start = strchr(contactPos, '<');
+    const char *end = NULL;
+
+    if (start) {
+        end = strchr(start, '>');
+        if (!end) return 0;
+        start++;  // skip '<'
+    }
+    else {
+        start = contactPos;
+        end = start;
+        while (*end && *end != ';' && *end != '\r' && *end != '\n')
+            end++;
+    }
+
+    int len = (int)(end - start);
+    if (len <= 0 || len >= outSize)
+        return 0;
+
+    strncpy(outp, start, len);
+    outp[len] = '\0';
+    return 1;
