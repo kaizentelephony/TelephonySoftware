@@ -50,4 +50,57 @@
 
     strncpy(outp, start, len);
     outp[len] = '\0';
+
     return 1;
+
+
+///////////////////////////// new
+
+int get_contact_value(const char *sip, char *outp, int outSize)
+{
+    if (!sip || !outp) return 0;
+
+    const char *p = sip;
+    const char *contactPos = NULL;
+
+    // ---- Search Contact header at line start ----
+    while (*p) {
+        if ((p == sip || *(p - 1) == '\n') &&
+            _strnicmp(p, "Contact:", 8) == 0) {
+            contactPos = p + 8;
+            break;
+        }
+        p++;
+    }
+
+    if (!contactPos)
+        return 0;
+
+    // ---- Skip spaces ----
+    while (*contactPos == ' ' || *contactPos == '\t')
+        contactPos++;
+
+    // ---- Extract URI ----
+    const char *start = strchr(contactPos, '<');
+    const char *end = NULL;
+
+    if (start) {
+        end = strchr(start, '>');
+        if (!end) return 0;
+        start++;   // skip '<'
+    } else {
+        start = contactPos;
+        end = start;
+        while (*end && *end != ';' && *end != '\r' && *end != '\n')
+            end++;
+    }
+
+    int len = (int)(end - start);
+    if (len <= 0 || len >= outSize)
+        return 0;
+
+    strncpy(outp, start, len);
+    outp[len] = '\0';
+
+    return 1;
+}
