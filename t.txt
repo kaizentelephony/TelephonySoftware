@@ -104,3 +104,35 @@ int get_contact_value(const char *sip, char *outp, int outSize)
 
     return 1;
 }
+
+
+////////////////////
+
+From: <sip:447425119116@212.36.166.235>;tag=BN-1655984730-1-1770366514-2136844261
+To: <sip:+442030235970@84.246.115.72>
+Call-ID: 440589135_97879135@212.36.166.235
+CSeq: 782364 INVITE
+Via: SIP/2.0/UDP 172.16.240.12:5060;branch=z9hG4bK-2ac8e305-b10dda-b39e1efa-7efa35f96348
+Route: <sip:172.16.5.173:5060;lr>
+X-SessionId: -1655984730
+User-Agent: BN4000-3.9.2-814
+Max-Forwards: 69
+Accept: application/sdp, application/isup, application/dtmf, application/dtmf-relay, multipart/mixed
+Supported: precondition,timer,100rel
+P-Asserted-Identity: <sip:+447425119116@212.36.166.235:5060>
+Via: SIP/2.0/UDP 84.246.115.72:5060;received=212.36.166.235;rport=5060;branch=z9hG4bK-1655984730
+Via: SIP/2.0/UDP 212.36.166.235:5060;branch=z9hG4bK02B7add8b6ba0d995e8
+Contact: <sip:447425119116@172.16.240.12:5060;transport=UDP>
+Content-Disposition: session;handling=required
+Allow: INVITE,CANCEL,ACK,BYE,OPTIONS,INFO,PRACK,UPDATE,REFER,NOTIFY
+Session-Expires: 1800
+Min-SE: 90
+Content-Type: application/sdp
+Content-Length: 210
+
+v=0
+
+
+
+
+
